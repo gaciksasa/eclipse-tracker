@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: eclipse-tracker
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    # Vite copies everything in public/ (textures + iss.glb) into dist/, so the
+    # assets ship with the build — no runtime download needed.
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+    routes:
+      # Single-page app: serve index.html for any path that isn't a real file.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      # Long-lived caching for the big, content-stable texture/model assets.
+      - path: /textures/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /models/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

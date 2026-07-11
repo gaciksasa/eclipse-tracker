@@ -1,0 +1,22 @@
+{
+  "name": "eclipse-tracker",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Eclipse Tracker — realistic real-time Sun-Earth-Moon simulation with accurate ephemeris, ISS, and solar/lunar eclipse prediction and visualization, built with Three.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "textures": "node scripts/download-textures.mjs"
+  },
+  "dependencies": {
+    "astronomy-engine": "^2.1.19",
+    "satellite.js": "^5.0.0",
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1",
+    "vite": "^5.4.0"
+  }
+}
