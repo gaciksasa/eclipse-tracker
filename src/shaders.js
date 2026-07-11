@@ -272,9 +272,12 @@ export const atmosphereFragmentShader = /* glsl */ `
     // dot(N,V) grows negative toward the planet-hugging edge. -dot makes the
     // glow brightest just above the horizon and fade to zero up the shell.
     float depth = max(-dot(N, V), 0.0);
-    // Gentle, wide falloff (no sharp band) plus a soft outer taper so the shell
-    // never shows a hard line where it meets space.
-    float limb = pow(depth, 0.9) * smoothstep(0.0, 0.14, depth);
+    // Gentle, wide falloff (no sharp band). The glow is anchored to zero exactly
+    // at the shell's silhouette (depth = 0) and ramps in over a wide range, then
+    // an extra smooth outer feather stretches the fade so the boundary between
+    // atmosphere and vacuum is imperceptible rather than a defined ring.
+    float limb = pow(depth, 1.05) * smoothstep(0.0, 0.32, depth);
+    limb *= smoothstep(0.0, 0.10, depth); // extra feather right at the edge
 
     // Sun elevation for this parcel of air: >0 sunlit, ~0 at the terminator.
     float s = dot(N, sunDir);
@@ -295,9 +298,9 @@ export const atmosphereFragmentShader = /* glsl */ `
     vec3 sunrise = vec3(1.0, 0.46, 0.18);
     vec3 col = mix(blue, sunrise, warm);
 
-    float base = limb * lit * 2.0;              // soft blue rim on the lit limb
-    float arc = limb * lit * warm * 6.0;        // warm sunrise arc toward the Sun
-    float bloom = forward * limb * lit * 3.5;   // extra blaze straight at the Sun
+    float base = limb * lit * 2.6;              // soft blue rim on the lit limb
+    float arc = limb * lit * warm * 7.5;        // warm sunrise arc toward the Sun
+    float bloom = forward * limb * lit * 4.2;   // extra blaze straight at the Sun
     float intensity = base + arc + bloom;
 
     gl_FragColor = vec4(linearToSRGB(col * intensity), clamp(intensity, 0.0, 1.0));

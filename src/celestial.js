@@ -24,7 +24,7 @@ const EARTH_RADIUS = 1;
 const MOON_RADIUS = 0.2727; // 1737.4 km / 6371 km — true Moon/Earth ratio
 const SUN_RADIUS = 109.2; // 696000 km / 6371 km — true Sun/Earth ratio
 const CLOUD_RADIUS = EARTH_RADIUS * 1.0025; // ~16 km — realistic cloud-top height
-const ATMO_RADIUS = EARTH_RADIUS * 1.04;
+const ATMO_RADIUS = EARTH_RADIUS * 1.06;
 const STAR_RADIUS = 120000; // beyond the Sun so it stays in the background
 
 // The Sun casts light as parallel rays (physically correct for its distance).

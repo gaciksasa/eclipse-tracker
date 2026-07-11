@@ -130,6 +130,11 @@ let selected = null; // null | 'earth' | 'moon' | 'sun' | 'iss'
 // The solar eclipse currently being watched, if any (drives the Sun thumbnail).
 let activeSolarEclipse = null;
 const prevBodyPos = new THREE.Vector3();
+// Scratch objects for the angular body-tracking in the animation loop.
+const trackFrom = new THREE.Vector3();
+const trackTo = new THREE.Vector3();
+const trackOffset = new THREE.Vector3();
+const trackQuat = new THREE.Quaternion();
 
 function bodyPosition(target, eph) {
   if (target === 'moon') return eph.moon.world;
@@ -289,12 +294,25 @@ function animate() {
   }
 
   if (selected) {
-    // Track the selected body: move the camera and target by the body's
-    // displacement so it stays centered while free-look stays available.
     const bodyPos = bodyPosition(selected, eph);
-    const delta = bodyPos.clone().sub(prevBodyPos);
-    camera.position.add(delta);
-    controls.target.add(delta);
+    // Track the selected body by rotating the camera's vantage AROUND the Earth
+    // (origin) to follow the body's angular motion, rather than merely
+    // translating with it. Translating keeps the body centred but drags the
+    // fixed star field along, so nothing appears to move over hours. Rotating
+    // by the same angle the body swept keeps it centred too, but lets the stars
+    // drift behind at the body's true rate against the sky (~0.5°/h for the
+    // Moon during an eclipse, a full wheel per orbit for the ISS). Free-look
+    // still works: the user's chosen offset is what gets revolved.
+    trackFrom.copy(prevBodyPos);
+    trackTo.copy(bodyPos);
+    if (trackFrom.lengthSq() > 1e-12 && trackTo.lengthSq() > 1e-12) {
+      trackFrom.normalize();
+      trackTo.normalize();
+      trackQuat.setFromUnitVectors(trackFrom, trackTo);
+      trackOffset.copy(camera.position).sub(controls.target).applyQuaternion(trackQuat);
+      controls.target.copy(bodyPos);
+      camera.position.copy(bodyPos).add(trackOffset);
+    }
     prevBodyPos.copy(bodyPos);
   }
   controls.update();
