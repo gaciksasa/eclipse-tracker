@@ -165,6 +165,14 @@ export function createWorld(scene, renderer) {
   const iss = makeISS();
   scene.add(iss);
 
+  // Reusable scratch objects for orienting the tidally-locked Moon each frame.
+  const moonBasisX = new THREE.Vector3();
+  const moonBasisY = new THREE.Vector3();
+  const moonBasisZ = new THREE.Vector3();
+  const moonMatrix = new THREE.Matrix4();
+  const WORLD_UP = new THREE.Vector3(0, 1, 0);
+  const WORLD_UP_ALT = new THREE.Vector3(0, 0, 1);
+
   // ---------------------------------------------------------------------
   function update(eph, cloudDrift) {
     const sunDir = eph.sun.dir;
@@ -192,6 +200,21 @@ export function createWorld(scene, renderer) {
 
     // Moon at its true position and distance (in Earth radii).
     moon.position.copy(eph.moon.world);
+
+    // Tidal locking: the Moon always turns the SAME hemisphere toward Earth, so
+    // from Earth we only ever see the near side. The lunar texture is centred on
+    // the near side (0°N/0°E maps to the mesh's local +X), so orient the mesh so
+    // local +X points at Earth (the origin) and local +Y (the north pole) stays
+    // roughly aligned with world up. Without this the texture is frozen in world
+    // space and the wrong face shows as the Moon orbits.
+    moonBasisX.copy(eph.moon.world).multiplyScalar(-1).normalize(); // Moon -> Earth
+    // Pick a world up not parallel to the facing direction to avoid a degenerate
+    // basis when the Moon passes near the celestial pole.
+    const up = Math.abs(moonBasisX.dot(WORLD_UP)) > 0.999 ? WORLD_UP_ALT : WORLD_UP;
+    moonBasisZ.crossVectors(moonBasisX, up).normalize();
+    moonBasisY.crossVectors(moonBasisZ, moonBasisX).normalize();
+    moonMatrix.makeBasis(moonBasisX, moonBasisY, moonBasisZ);
+    moon.quaternion.setFromRotationMatrix(moonMatrix);
 
     // Sun sphere + glow at its true position/distance (~23,481 Earth radii).
     sun.position.copy(eph.sun.world);

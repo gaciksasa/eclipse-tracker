@@ -124,7 +124,7 @@ const ISS_FRAME_RADIUS = 1e-5;
 const FRAME_RADIUS = { earth: 1, moon: 0.2727, sun: 109.2, iss: ISS_FRAME_RADIUS };
 
 // Default time speed applied when a body is focused (seconds of sim per second).
-const FOCUS_SPEED = { iss: 60, earth: 3600, moon: 604800, sun: 604800 };
+const FOCUS_SPEED = { iss: 60, earth: 3600, moon: 86400, sun: 604800 };
 
 let selected = null; // null | 'earth' | 'moon' | 'sun' | 'iss'
 // The solar eclipse currently being watched, if any (drives the Sun thumbnail).
